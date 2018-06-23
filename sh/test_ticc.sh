@@ -20,7 +20,7 @@ int main() {
     return 0;
 }
 EOF
-    ( ${dir}/ticc.sh run /tmp/sut/_.c -- -O3 -frecord-gcc-switches &&
+    ( ${dir}/ticc run /tmp/sut/_.c -- -O3 -frecord-gcc-switches &&
     echo "c program seems working" )
     ( readelf -p .GCC.command.line /tmp/ticc/_ |
     grep -P --color '\-O3|\-frecord' >/dev/null &&
@@ -52,7 +52,7 @@ int main() {
     return 0;
 }
 EOF
-    ( ${dir}/ticc.sh run /tmp/sut/_.cc -- -DMAGIC_NUM=1000 -frecord-gcc-switches &&
+    ( ${dir}/ticc run /tmp/sut/_.cc -- -DMAGIC_NUM=1000 -frecord-gcc-switches &&
     echo "c++ program seems working" )
     ( readelf -p .GCC.command.line /tmp/ticc/_ |
     grep -P --color '\-D MAGIC' >/dev/null &&
@@ -71,7 +71,7 @@ int main() {
     return 0;
 }
 EOF
-    ( ${dir}/ticc.sh dasm /tmp/sut/_.c shout |
+    ( ${dir}/ticc dasm /tmp/sut/_.c shout |
     grep -P --color '[a-fA-F0-9]+\s+call' >/dev/null &&
     echo "disassemble seems successful (find subroutine)" )
 }
@@ -90,7 +90,7 @@ int main() {
     return 0;
 }
 EOF
-    ( ${dir}/ticc.sh dasm /tmp/sut/_.cc -- -pthread |
+    ( ${dir}/ticc dasm /tmp/sut/_.cc -- -pthread |
     grep -P 'std::thread th' >/dev/null &&
     echo "disassemble seems successful (find source line)")
 }
