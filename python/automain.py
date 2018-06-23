@@ -1,46 +1,11 @@
+
 import os
 import re
-try:
+import sys
+if sys.version_info[0] >= 3:
     import io as StringIO
-except ImportError:  # python 2.7 compatibility
+else:  # python 2.7 compatibility
     import StringIO
-
-
-doc = """
-automain
---------
-
-#### Usage:
-
-tcc automain i_file o_file
-
-tcc autorun i_file
-
-#### Summary:
-
-To generate unit test launcher function.
-
-A unit test launcher function is a plain old C function that calls the
-test functions, written in C or C++, and generate a basic summary as
-well as some profiling information.
-
-A test function should have this signature: `void()`
-
-The generator can handle only one source file (i_file) at a time.
-
-The file extension (.c, .cc, .cpp) is used to determine the source
-language.
-
-Autorun is a short to:
-
-```
-tcc automain i_file o_file
-tcc compile -o out_path i_file o_file
-out_path
-```
-
-It creates the launcher function, saves it to o_file then builds and executes the binary.
-"""
 
 
 class Stream(object):
@@ -163,13 +128,13 @@ class SetUpFunctionDeclaration(FuncDeclaration):
         return CallFunction(self.func_name)
 
     @classmethod
-    def _create_global_setup(cls, _):
+    def _create_global_setup(cls, s):
         ins = cls('SetUpGlobal')
         ins.is_global = True
         return ins
 
     @classmethod
-    def _create_case_setup(cls, _):
+    def _create_case_setup(cls, s):
         ins = cls('setUp')
         ins.is_global = False
         return ins
@@ -194,13 +159,13 @@ class TearDownFunctionDeclaration(FuncDeclaration):
         return CallFunction(self.func_name)
 
     @classmethod
-    def _create_global_setup(cls, _):
+    def _create_global_setup(cls, s):
         ins = cls('TearDownGlobal')
         ins.is_global = True
         return ins
 
     @classmethod
-    def _create_case_setup(cls, _):
+    def _create_case_setup(cls, s):
         ins = cls('tearDown')
         ins.is_global = False
         return ins
@@ -214,10 +179,10 @@ class IncludeStatement(SourceObjectInterface):
 
     def to_string(self, options=None):
         options = to_dict(options)
-        dependency = self._lib
+        l = self._lib
         if self.is_std_library and options.get('CXX') and self._lib.endswith('.h'):
-            dependency = 'c{}'.format(self._lib.replace('.h', ''))
-        return '#include <{}>'.format(dependency)
+            l = 'c{}'.format(self._lib.replace('.h', ''))
+        return '#include <{}>'.format(l)
 
     @classmethod
     def create(cls, stream):
@@ -252,7 +217,7 @@ class FuncScopeBegin(ScopeBegin):
         self.ret = ret
         self.attr = attr
 
-    def _args_to_string(self, _):
+    def _args_to_string(self, options):
         if not self.args:
             return '()'
         return '({})'.format(', '.join(self.args))
@@ -385,12 +350,12 @@ class Parser(object):
                     self._source_objects.append(source_object)
 
                 if isinstance(source_object, SetUpFunctionDeclaration):
-                    if getattr(source_object, 'is_global', None):
+                    if source_object.is_global:
                         self._g_setup = source_object
                     else:
                         self._c_setup = source_object
                 elif isinstance(source_object, TearDownFunctionDeclaration):
-                    if getattr(source_object, 'is_global', None):
+                    if source_object.is_global:
                         self._g_teardown = source_object
                     else:
                         self._c_teardown = source_object
@@ -444,8 +409,7 @@ class Formatter(object):
     def indent(self):
         return ' ' * (self._indent * self._num_char_indent)
 
-    @staticmethod
-    def newline():
+    def newline(self):
         return '\n'
 
 
@@ -544,8 +508,6 @@ def print_format(source_objects, o_path, options):
 
 
 def create_automain(i_path, o_path):
-    raise_if_path_not_exist(i_path)
-    raise_if_dir_not_writable(o_path)
     with open(i_path, 'r') as fp:
         stream = Stream(fp)
         so_list = generate_contents(stream)
@@ -555,3 +517,14 @@ def create_automain(i_path, o_path):
     if os.path.splitext(i_path)[-1] in ('.cc', '.cpp', '.cxx'):
         options['CXX'] = True
     print_format(so_list, o_path, options)
+
+
+def main():
+    i_path, o_path = (sys.argv[1:] + ['___', '___'])[0: 2]
+    raise_if_path_not_exist(i_path)
+    raise_if_dir_not_writable(o_path)
+    create_automain(i_path, o_path)
+
+
+if __name__ == '__main__':
+    main()

@@ -1,2 +1,2 @@
-# tcc
-A (T)iny (C) &amp; (C)++ Productivity Tool
+# TiCC
+A (Ti)ny (C) &amp; (C)++ Productivity Tool
