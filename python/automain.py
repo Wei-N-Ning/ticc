@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 
 import os
 import re
@@ -526,5 +527,19 @@ def main():
     create_automain(i_path, o_path)
 
 
+def has_tiny_tests(file_path):
+    with open(file_path, 'r') as fp:
+        stream = Stream(fp)
+        parser = generate_func_decls(stream)
+        so_list = parser.source_objects()
+    print(len(so_list))
+
+
 if __name__ == '__main__':
-    main()
+    if len(sys.argv) == 2:
+        has_tiny_tests(sys.argv[1])
+    elif len(sys.argv) == 3:
+        main()
+    else:
+        raise RuntimeError("invalid arguments")
+
