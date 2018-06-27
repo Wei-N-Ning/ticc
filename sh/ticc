@@ -108,11 +108,21 @@ runApp() {
     case ${APP} in
         "run")
             buildProgram ${APP_ARGS} && runProgram ${APP_ARGS}
+            if [[ $? != 0 ]]
+            then
+                echo -e "fail:\n${APP_ARGS}"
+                exit 1
+            fi
             return 0
             ;;
         "dasm")
             FLAGS="-g ${FLAGS}"
             buildProgram ${APP_ARGS} && disassemble ${OUT_FILE} ${APP_ARGS}
+            if [[ $? != 0 ]]
+            then
+                echo -e "fail:\n${APP_ARGS}\n${OUT_FILE}"
+                exit 1
+            fi
             return 0
             ;;
     esac
