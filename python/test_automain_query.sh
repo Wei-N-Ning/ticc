@@ -5,12 +5,12 @@ setUp() {
 }
 
 expectTinyTestsFound() {
-    echo $( ./automain.py ./testdata/test_nomain.c )
+    echo $( python ./automain.py ./testdata/test_nomain.c )
 
 }
 
 expectTinyTestsNotFound() {
-    echo $( ./automain.py ./testdata/test_tinyCUnit.c )
+    echo $( python ./automain.py ./testdata/test_tinyCUnit.c )
 }
 
 setUp
