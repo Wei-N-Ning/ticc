@@ -30,7 +30,7 @@ setUp() {
 identifySourceLang() {
     local ext=
 
-    ext=$( echo ${1} | grep -Po '\.c$' )
+    ext=$( echo ${1} | perl -ne '/(\.c)$/ and print $1' )
     if [[ "${ext}" == ".c" ]]
     then
         LANG=${CC}
@@ -38,7 +38,7 @@ identifySourceLang() {
         return 0
     fi
 
-    ext=$( echo ${1} | grep -P '(\.cc|\.cpp|\.cxx)$' )
+    ext=$( echo ${1} | perl -ne '/(\.cc|\.cpp|\.cxx)$/ and print $1'  )
     if [[ "${ext}" != "" ]]
     then
         LANG=${CXX}
