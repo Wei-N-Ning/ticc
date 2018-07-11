@@ -701,6 +701,7 @@ runApp() {
             ;;
         "test")
             buildProgramWithAutomain ${APP_ARGS} && runProgram
+            return 0
             ;;
          "clean")
             rm -rf ${WORKSPACE}
