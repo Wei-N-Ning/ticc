@@ -679,6 +679,7 @@ runApp() {
                 echo -e "fail:\n${APP_ARGS}"
                 exit 1
             fi
+            exit 0
             ;;
         "run")
             buildProgram ${APP_ARGS} && runProgram ${APP_ARGS}
