@@ -9,7 +9,7 @@ WHICH=which
 CC=cc
 CXX=c++
 CLANGFORMAT=
-LANG=
+COMPILER=
 WORKSPACE=/tmp/ticc
 OUT_FILE=${WORKSPACE}/_
 FLAGS=
@@ -594,7 +594,7 @@ identifySourceLang() {
     ext=$( echo ${1} | perl -ne '/(\.c)$/ and print $1' )
     if [[ "${ext}" == ".c" ]]
     then
-        LANG=${CC}
+        COMPILER=${CC}
         FLAGS="${CC_FLAGS} ${FLAGS}"
         return 0
     fi
@@ -602,7 +602,7 @@ identifySourceLang() {
     ext=$( echo ${1} | perl -ne '/(\.cc|\.cpp|\.cxx)$/ and print $1'  )
     if [[ "${ext}" != "" ]]
     then
-        LANG=${CXX}
+        COMPILER=${CXX}
         FLAGS="${CXX_FLAGS} ${FLAGS}"
         return 0
     fi
@@ -619,13 +619,13 @@ buildProgramWithAutomain() {
     shift
     writeAutomain
     python ${AUTOMAIN} ${srcPath} ${TEST_LAUNCHER}
-    ${LANG} ${srcPath} ${TEST_LAUNCHER} ${FLAGS} -o ${OUT_FILE}
+    ${COMPILER} ${srcPath} ${TEST_LAUNCHER} ${FLAGS} -o ${OUT_FILE}
 }
 
 # $@: APP_ARGS
 buildProgram() {
     identifySourceLang $1
-    ${LANG} $1 ${FLAGS} -o ${OUT_FILE}
+    ${COMPILER} $1 ${FLAGS} -o ${OUT_FILE}
 }
 
 # $@: APP_ARGS
@@ -636,11 +636,27 @@ buildProgram() {
 runPreprocessor() {
     identifySourceLang ${1}
     local outfile=${WORKSPACE}/$( basename ${1} )
-    ${LANG} -E ${1} ${FLAGS} -o ${outfile}
+    ${COMPILER} -E ${1} ${FLAGS} -o ${outfile}
     if [[ "${CLANGFORMAT}" != "" ]]
     then
-        ${CLANGFORMAT} -style=google -i ${outfile}
+        ${CLANGFORMAT} -style=Google -i ${outfile}
     fi
+
+    # extract source
+    local oneliner=$( cat << "EOF"
+BEGIN {
+    my $s = 1;
+    my $l = 0;
+};
+$s-- if /_SOURCE_BEGIN_/;
+$s++ if /_SOURCE_END_/;
+print if $s == $l;
+$l = $s;
+EOF
+)
+    cp ${outfile} ${outfile}.old
+    perl -lne "${oneliner}" <${outfile}.old >${outfile}
+
     echo "source file transformed: ${outfile}"
 }
 
@@ -693,6 +709,12 @@ validate() {
 
 runApp() {
     case ${APP} in
+        "help")
+            echo "ticc <app> file -- arg1 arg2 ... "
+            echo "supported <app>:"
+            echo "build run dasm test valgrind pp clean"
+            return 0
+            ;;
         "build")
             buildProgram ${APP_ARGS}
             if [[ $? != 0 ]]
