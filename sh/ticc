@@ -5,7 +5,7 @@
 # dotnet run $FILE.cs
 # to automate the building and running of a single c program
 
-WHICH=/bin/which
+WHICH=which
 CC=cc
 CXX=c++
 CLANGFORMAT=
