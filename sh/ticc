@@ -639,7 +639,7 @@ runPreprocessor() {
     ${COMPILER} -E ${1} ${FLAGS} -o ${outfile}
     if [[ "${CLANGFORMAT}" != "" ]]
     then
-        ${CLANGFORMAT} -style=Google -i ${outfile}
+        ${CLANGFORMAT} -style="{BasedOnStyle: Google, IndentWidth: 4}" -i ${outfile}
     fi
 
     # extract source
