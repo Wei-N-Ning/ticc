@@ -8,6 +8,7 @@
 WHICH=/bin/which
 CC=cc
 CXX=c++
+CLANGFORMAT=
 LANG=
 WORKSPACE=/tmp/ticc
 OUT_FILE=${WORKSPACE}/_
@@ -22,6 +23,10 @@ setUp() {
     ls ${WHICH} >/dev/null 2>&1
     ${WHICH} ${CC} >/dev/null 2>&1
     ${WHICH} ${CXX} >/dev/null 2>&1
+    if ( ${WHICH} clang-format >/dev/null 2>&1 )
+    then
+        CLANGFORMAT=clang-format
+    fi
     if [[ ! -d ${WORKSPACE} ]]
     then
         mkdir -p ${WORKSPACE}
@@ -623,6 +628,22 @@ buildProgram() {
     ${LANG} $1 ${FLAGS} -o ${OUT_FILE}
 }
 
+# $@: APP_ARGS
+# OUT_FILE in this case is the source file transformed by the pre-
+# processor,
+# if Clang is installed, run Clang format helper on the resulting
+# source file
+runPreprocessor() {
+    identifySourceLang ${1}
+    local outfile=${WORKSPACE}/$( basename ${1} )
+    ${LANG} -E ${1} ${FLAGS} -o ${outfile}
+    if [[ "${CLANGFORMAT}" != "" ]]
+    then
+        ${CLANGFORMAT} -style=google -i ${outfile}
+    fi
+    echo "source file transformed: ${outfile}"
+}
+
 runProgram() {
     ${OUT_FILE}
 }
@@ -679,7 +700,7 @@ runApp() {
                 echo -e "fail:\n${APP_ARGS}"
                 exit 1
             fi
-            exit 0
+            return 0
             ;;
         "run")
             buildProgram ${APP_ARGS} && runProgram ${APP_ARGS}
@@ -704,8 +725,17 @@ runApp() {
             buildProgramWithAutomain ${APP_ARGS} && runProgram
             return 0
             ;;
-         "clean")
+        "valgrind")
+            buildProgram ${APP_ARGS} && valgrind --leak-check=full ${OUT_FILE} ${APP_ARGS}
+            return 0
+            ;;
+        "pp")
+            runPreprocessor ${APP_ARGS}
+            return 0
+            ;;
+        "clean")
             rm -rf ${WORKSPACE}
+            return 0
             ;;
     esac
     echo "unsupported app: ${APP}"
