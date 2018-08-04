@@ -650,7 +650,7 @@ BEGIN {
 };
 $s-- if /_SOURCE_BEGIN_/;
 $s++ if /_SOURCE_END_/;
-print if $s == $l;
+print if $s == $l && !/^# \d+/;
 $l = $s;
 EOF
 )
