@@ -10,6 +10,7 @@ CC=cc
 CXX=c++
 CLANGFORMAT=
 COMPILER=
+COMPILER_VENDOR=$( ${CC} --version | perl -ne '/Free Software Foundation/ && print "gnu";/clang/ && print "clang"' )
 WORKSPACE=/tmp/ticc
 OUT_FILE=${WORKSPACE}/_
 FLAGS=
@@ -664,10 +665,7 @@ runProgram() {
     ${OUT_FILE}
 }
 
-# $@: OUT_FILE APP_ARGS
-#              SOURCE_FILE ACTUAL_ARGS
-# need to skip SOURCE_FILE
-disassemble() {
+disassemble_gdb() {
     local exe=${1:?"missing binary path!"}
     shift 1  # skip exe
     shift 1  # skip src
@@ -676,6 +674,30 @@ disassemble() {
     -ex "set disassembly-flavor intel" \
     -ex "file ${exe}" \
     -ex "disassemble /rs ${func}"
+}
+
+disassemble_lldb() {
+    local exe=${1:?"missing binary path!"}
+    shift 1  # skip exe
+    shift 1  # skip src
+    local func=${1:-main}
+    lldb --batch \
+    -o "file ${exe}" \
+    -o "disassemble -F intel -n ${func}"
+}
+
+# $@: OUT_FILE APP_ARGS
+#              SOURCE_FILE ACTUAL_ARGS
+# need to skip SOURCE_FILE
+disassemble() {
+    case "${COMPILER_VENDOR}" in
+        "gnu")
+            disassemble_gdb ${@}
+            ;;
+        "clang")
+            disassemble_lldb ${@}
+            ;;
+    esac
 }
 
 tearDown() {
