@@ -35,7 +35,7 @@ setUp() {
 }
 
 AUTOMAIN=${WORKSPACE}/automain.py
-TEST_LAUNCHER=${WORKSPACE}/tt.c
+TEST_LAUNCHER_PREFIX=${WORKSPACE}/tl
 writeAutomain() {
     if [[ ! -f ${AUTOMAIN} ]]
     then
@@ -617,10 +617,12 @@ identifySourceLang() {
 buildProgramWithAutomain() {
     identifySourceLang ${1}
     local srcPath=${1}
+    local srcBaseName=$( basename ${srcPath} )
+    local testLauncher=${TEST_LAUNCHER_PREFIX}.${srcBaseName}
     shift
     writeAutomain
-    python ${AUTOMAIN} ${srcPath} ${TEST_LAUNCHER}
-    ${COMPILER} ${srcPath} ${TEST_LAUNCHER} ${FLAGS} -o ${OUT_FILE}
+    python ${AUTOMAIN} ${srcPath} ${testLauncher}
+    ${COMPILER} ${srcPath} ${testLauncher} ${FLAGS} -o ${OUT_FILE}
 }
 
 # $@: APP_ARGS
