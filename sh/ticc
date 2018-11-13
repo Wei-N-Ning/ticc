@@ -667,6 +667,12 @@ runProgram() {
     ${OUT_FILE}
 }
 
+# $@: APP_ARGS
+buildAndRunJavaProgram() {
+    local nameOnly=$( echo ${1} | perl -ne '/^(.+).java$/ && print $1' )
+    javac ${1} && java ${nameOnly}
+}
+
 disassemble_gdb() {
     local exe=${1:?"missing binary path!"}
     shift 1  # skip exe
@@ -777,6 +783,10 @@ runApp() {
             ;;
         "pp")
             runPreprocessor ${APP_ARGS}
+            return 0
+            ;;
+        "java")
+            buildAndRunJavaProgram ${APP_ARGS}
             return 0
             ;;
         "clean")
