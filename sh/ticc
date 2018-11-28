@@ -20,6 +20,8 @@ CXX_FLAGS="-Wall -Werror -std=c++11"
 APP=
 APP_ARGS=
 
+RESOURCE_DIR=$( realpath $( dirname ${0} )/../resources/ )
+
 setUp() {
     ls ${WHICH} >/dev/null 2>&1
     ${WHICH} ${CC} >/dev/null 2>&1
@@ -668,9 +670,17 @@ runProgram() {
 }
 
 # $@: APP_ARGS
+# note this runner only accepts Junit class!
+# source:
+# https://junit.org/junit4/faq.html#atests_1
 buildAndRunJavaProgram() {
     local nameOnly=$( echo ${1} | perl -ne '/^(.+).java$/ && print $1' )
-    javac ${1} && java ${nameOnly}
+    local newClasspath="${CLASSPATH}:
+        ${RESOURCE_DIR}/junit-4.13-beta-1.jar:
+        ${RESOURCE_DIR}/hamcrest-2.1-rc2.jar"
+    ( CLASSPATH=${newClasspath} javac ${1} &&
+    java org.junit.runner.JUnitCore ${nameOnly} &&
+     rm -f ${nameOnly}.class )
 }
 
 disassemble_gdb() {
