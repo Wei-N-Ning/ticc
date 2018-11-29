@@ -688,12 +688,11 @@ buildAndRunJavaProgram() {
     then
         export CLASSPATH=${newClasspath}
         ( javac ${1} &&
-         java org.junit.runner.JUnitCore ${nameOnly} &&
-         rm -f ${nameOnly}.class )
+         java org.junit.runner.JUnitCore ${nameOnly} )
+        rm -f *.class
     else
-        ( javac ${1} &&
-         java ${nameOnly} &&
-         rm -f ${nameOnly}.class )
+        ( javac ${1} && java ${nameOnly} )
+        rm -f *.class
     fi
 }
 
