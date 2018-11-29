@@ -683,16 +683,14 @@ runProgram() {
 buildAndRunJavaProgram() {
     local hasMain=$( cat ${1} | perl -ne '/public\s+static\s+void\s+main\(/ && print' )
     local nameOnly=$( echo ${1} | perl -ne '/^(.+).java$/ && print $1' )
-    local newClasspath="${CLASSPATH}:${RESOURCE_DIR}/junit-4.13-beta-1.jar:${RESOURCE_DIR}/hamcrest-2.1-rc2.jar"
+    local newClasspath="${CLASSPATH}:${RESOURCE_DIR}/junit-4.13-beta-1.jar:${RESOURCE_DIR}/hamcrest-2.1-rc2.jar:${WORKSPACE}"
     if [[ "${hasMain}" == "" ]]
     then
         export CLASSPATH=${newClasspath}
-        ( javac ${1} &&
+        ( javac ${1} -d ${WORKSPACE} &&
          java org.junit.runner.JUnitCore ${nameOnly} )
-        rm -f *.class
     else
-        ( javac ${1} && java ${nameOnly} )
-        rm -f *.class
+        ( javac ${1} -d ${WORKSPACE} && java ${nameOnly} )
     fi
 }
 
