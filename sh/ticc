@@ -712,7 +712,7 @@ disassemble_lldb() {
     local func=${1:-main}
     lldb --batch \
     -o "file ${exe}" \
-    -o "disassemble -F intel -n ${func}"
+    -o "disassemble -m -F intel -n ${func}"
 }
 
 # $@: OUT_FILE APP_ARGS
